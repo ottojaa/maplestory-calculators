@@ -3,7 +3,7 @@
 
 Ties together the three calculators the skills already have:
   - damage gain:   maplestory-gms/scripts/damage_model.py   (product of damage buckets)
-  - cube cost:     maplestory-cubing/scripts/cube_calc.mjs  (MathBro's calculator, needs Node)
+  - cube cost:     maplestory-cubing/scripts/cube_calc.mjs  (Nexon's line tables, offline, needs Node)
   - star force:    maplestory-strength-map/scripts/star_force.py
 
 Candidates come from a JSON file (a list). Each candidate:

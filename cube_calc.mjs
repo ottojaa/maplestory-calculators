@@ -1,183 +1,320 @@
 #!/usr/bin/env node
-// Runs MathBro's cubing calculator (https://brendonmay.github.io/cubingCalculator/) headlessly.
-// The calculator's own JS files are evaluated in a sandbox, so results match the website exactly.
-// Nothing from the site is re-implemented here. Files come from a download cache (~/.cache/maplestory-cubing,
-// refreshed with --refresh) or, when there's no cache and no network (e.g. Claude Desktop's sandbox),
-// from an optional local vendor/ folder next to this script (not committed: the calculator has no license).
+// Cube odds and costs for GMS (Heroic), computed offline.
+//
+// Line odds: data/cube_lines_kms.json, Nexon Korea's official per-line potential tables (GMS publishes none;
+// refresh with cube_rates_fetch.mjs). GMS numbers Nexon doesn't publish (tier-up rates, cube prices, the per-cube
+// meso fee, the Lv. 151+ stat step) are in data/cube_gms.json, each with its source.
+// --check also runs MathBro's calculator (https://brendonmay.github.io/cubingCalculator/), downloaded once into
+// ~/.cache/maplestory-cubing, and prints both results side by side. Nothing else needs the network.
 //
 // Usage:
-//   node cube_calc.mjs --item accessory --cube bright --from epic --to legendary --level 140 --want percStat=21
-//   node cube_calc.mjs --batch scenarios.json [--json]
+//   node cube_calc.mjs --item ring --cube glowing --from epic --to legendary --level 140 --want percStat=21
+//   node cube_calc.mjs --batch scenarios.json [--json] [--check]
+//   node cube_calc.mjs --lines --item weapon --cube glowing --to legendary --level 150
 //   node cube_calc.mjs --rates
-//   node cube_calc.mjs --refresh          (re-download the calculator files)
 
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import vm from "node:vm";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-const BASE_URL = "https://brendonmay.github.io/cubingCalculator/";
-const FILES = ["cubeRates.js", "getProbability.js", "statistics.js", "cubes.js"];
-const VENDOR_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "vendor");  // optional offline copy, not in the repo
-const WRITE_CACHE = process.env.CUBECALC_CACHE || path.join(os.homedir(), ".cache", "maplestory-cubing");
-let CACHE_DIR = WRITE_CACHE;
-
-// GMS 2025+ cube names -> the calculator's internal names.
-const CUBE_ALIASES = {
-  mystical: "occult", occult: "occult",
-  hard: "master", master: "master",
-  solid: "meister", meister: "meister",
-  glowing: "red", red: "red",
-  bright: "black", black: "black",
-};
-const CUBE_LABEL = { occult: "Mystical", master: "Hard", meister: "Solid", red: "Glowing", black: "Bright" };
-const TIERS = { rare: 0, epic: 1, unique: 2, legendary: 3 };
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const TIERS = ["rare", "epic", "unique", "legendary"];
 const TIER_LABEL = ["Rare", "Epic", "Unique", "Legendary"];
-const ITEM_TYPES = ["accessory", "badge", "belt", "bottom", "cape", "emblem", "gloves", "hat", "heart",
-  "overall", "top", "secondary", "shoes", "shoulder", "weapon"];
+const ITEM_ALIASES = { accessory: "ring", badge: "heart", forceshield: "forceShield", soulring: "forceShield" };
 
-const hasAll = (dir) => FILES.every((f) => fs.existsSync(path.join(dir, f)));
+// --- Data ---------------------------------------------------------------------------------------------------
 
-async function ensureFiles(refresh) {
-  if (!refresh) {
-    for (const dir of [WRITE_CACHE, VENDOR_DIR]) {
-      if (hasAll(dir)) { CACHE_DIR = dir; return; }
-    }
-  }
-  let dest = WRITE_CACHE;
-  try {
-    fs.mkdirSync(dest, { recursive: true });
-    fs.accessSync(dest, fs.constants.W_OK);
-  } catch {
-    dest = path.join(os.tmpdir(), "maplestory-cubing");
-    fs.mkdirSync(dest, { recursive: true });
-  }
-  try {
-    for (const f of FILES) {
-      const res = await fetch(BASE_URL + f);
-      if (!res.ok) throw new Error(`Failed to download ${f}: HTTP ${res.status}`);
-      fs.writeFileSync(path.join(dest, f), await res.text());
-    }
-    CACHE_DIR = dest;
-  } catch (e) {
-    if (!hasAll(VENDOR_DIR)) throw e;
-    console.error(`Download failed (${e.message}); using the bundled copy in ${VENDOR_DIR}.`);
-    CACHE_DIR = VENDOR_DIR;
-  }
+export function loadData() {
+  const read = (f) => JSON.parse(fs.readFileSync(path.join(HERE, "data", f), "utf8"));
+  const kms = read("cube_lines_kms.json");
+  const gms = read("cube_gms.json");
+  const cubeByName = {};
+  for (const [key, c] of Object.entries(gms.cubes)) for (const n of [key, ...c.aliases]) cubeByName[n] = key;
+  return { kms, gms, cubeByName, options: kms.options.map(classify) };
 }
 
-function loadCalculator() {
-  const quiet = () => {};
-  const ctx = vm.createContext({
-    console: { log: quiet, table: quiet, group: quiet, groupCollapsed: quiet, groupEnd: quiet, warn: quiet },
+// Option text (Korean, as Nexon prints it) -> what it is. Unrecognised text counts as a junk line.
+const OPTION_PATTERNS = [
+  [/^(STR|DEX|INT|LUK) \+(\d+)%$/, (m) => [`${m[1]} %`, +m[2]]],
+  [/^올스탯 \+(\d+)%$/, (m) => ["All Stats %", +m[1]]],
+  [/^최대 HP \+(\d+)%$/, (m) => ["Max HP %", +m[1]]],
+  [/^최대 MP \+(\d+)%$/, (m) => ["Max MP %", +m[1]]],
+  [/^공격력 \+(\d+)%$/, (m) => ["ATT %", +m[1]]],
+  [/^마력 \+(\d+)%$/, (m) => ["MATT %", +m[1]]],
+  [/^데미지 \+(\d+)%$/, (m) => ["Damage %", +m[1]]],
+  [/^보스 몬스터 (?:공격 시 )?데미지 \+(\d+)%$/, (m) => ["Boss Damage %", +m[1]]],
+  [/^몬스터 방어율 무시 \+(\d+)%$/, (m) => ["IED %", +m[1]]],
+  [/^크리티컬 확률 \+(\d+)%$/, (m) => ["Crit Rate %", +m[1]]],
+  [/^크리티컬 데미지 \+(\d+)%$/, (m) => ["Crit Damage %", +m[1]]],
+  [/^(?:모든 )?스킬(?:의)? 재사용 대기시간 -(\d+)초/, (m) => ["Cooldown s", +m[1]]],
+  [/^메소 획득량 \+(\d+)%$/, (m) => ["Meso %", +m[1]]],
+  [/^아이템 드롭률 \+(\d+)%$/, (m) => ["Item Drop %", +m[1]]],
+  [/확률로 오토스틸$/, () => ["Auto Steal", null]],
+];
+
+// Repeat limits Nexon lists on every cube page (대상 장비에 따른 옵션): at most one decent skill and one
+// "invincibility time after being hit" line, at most two of each "when hit" chance line. When a line hits its
+// family's limit, later lines draw from the remaining options: probability / (100% - excluded probabilities).
+const LIMITS = [
+  { family: "decent skill", max: 1, test: /^<쓸만한 .*> 스킬 사용 가능$/, ko: "쓸만한 스킬 계열" },
+  { family: "invincibility time after hit", max: 1, test: /^피격 후 무적시간 \+\d+초$/, ko: "피격 후 무적시간 증가" },
+  { family: "chance to ignore % damage when hit", max: 2, test: /^피격 시 \d+% 확률로 데미지의 \d+% 무시$/, ko: "피격 시 일정 확률로 데미지 % 무시" },
+  { family: "chance of invincibility when hit", max: 2, test: /^피격 시 \d+% 확률로 \d+초간 무적$/, ko: "피격 시 일정 확률로 일정 시간 무적" },
+];
+
+function classify(text) {
+  const limit = LIMITS.findIndex((l) => l.test.test(text));
+  for (const [re, f] of OPTION_PATTERNS) {
+    const m = text.match(re);
+    if (m) { const [stat, value] = f(m); return { text, stat, value, limit }; }
+  }
+  return { text, stat: null, value: null, limit };
+}
+
+function resolveCube(d, name) {
+  const key = d.cubeByName[String(name).toLowerCase()];
+  if (!key) throw new Error(`Unknown cube "${name}". Use one of: ${Object.keys(d.cubeByName).join(", ")}`);
+  return { key, ...d.gms.cubes[key] };
+}
+
+function resolveItem(d, name) {
+  const lower = String(name).toLowerCase();
+  const item = ITEM_ALIASES[lower] || Object.keys(d.kms.index.red.legendary).find((k) => k.toLowerCase() === lower);
+  if (!item) {
+    throw new Error(`Unknown item "${name}". Use one of: ${Object.keys(d.kms.index.red.legendary).join(", ")}, ` +
+      `or ${Object.keys(ITEM_ALIASES).join(", ")}`);
+  }
+  return item;
+}
+
+// The three line distributions for one cube, tier, slot and level: [{...option, p}] per line, each summing to 1.
+export function lineTables(d, cube, tier, item, level) {
+  const ranges = d.kms.index[cube.kmsLines]?.[TIERS[tier]]?.[item];
+  if (!ranges) throw new Error(`${cube.label} cubes have no ${TIER_LABEL[tier]} lines`);
+  const range = ranges.find(([a, b]) => level >= a && level <= b);
+  if (!range) {
+    throw new Error(`Nexon's tables have no ${item} at Lv. ${level} (they cover Lv. ${ranges[0][0]}-${ranges[ranges.length - 1][1]})`);
+  }
+  const bump = d.gms.statBump;
+  const bumped = level >= bump.fromLevel && level <= bump.toLevel;
+  return d.kms.tables[range[2]].map((rows) => {
+    const sum = rows.reduce((a, [, p]) => a + p, 0);
+    return rows.map(([o, p]) => {
+      const opt = d.options[o];
+      const value = bumped && bump.options.includes(opt.stat) ? opt.value + bump.plus : opt.value;
+      return { ...opt, value, p: p / sum };
+    });
   });
-  for (const f of FILES) {
-    vm.runInContext(fs.readFileSync(path.join(CACHE_DIR, f), "utf8"), ctx, { filename: f });
-  }
-  const api = vm.runInContext(
-    "({ getProbability, getTierCosts, geoDistrQuantile, cubingCost, emptyInputObject, tier_rates, prime_line_rates, maxCubeTier })",
-    ctx,
-  );
-  const header = fs.readFileSync(path.join(CACHE_DIR, "cubeRates.js"), "utf8").split("\n", 1)[0];
-  api.lineDataDate = header.replace(/^\/\/\s*/, "");
-  return api;
 }
+
+// --- Targets ------------------------------------------------------------------------------------------------
+
+// What each --want key counts, per line: a stat's value, or 1 for a matching line. "STR" stands for any one
+// main stat and "ATT" for MATT; they roll at the same odds.
+const is = (...stats) => (o) => (stats.includes(o.stat) ? 1 : 0);
+const val = (...stats) => (o) => (stats.includes(o.stat) ? o.value : 0);
+const WANTS = {
+  percStat: { desc: "at least this much STR % (all-stat lines count)", per: val("STR %", "All Stats %") },
+  lineStat: { desc: "lines of STR % or all-stat %", per: is("STR %", "All Stats %") },
+  percAllStat: { desc: "all-stat %, with STR/DEX/LUK % counting a third (Xenon)",
+    per: (o) => (o.stat === "All Stats %" ? o.value : ["STR %", "DEX %", "LUK %"].includes(o.stat) ? o.value / 3 : 0) },
+  lineAllStat: { desc: "lines of all-stat %", per: is("All Stats %") },
+  percHp: { desc: "max HP %", per: val("Max HP %") },
+  lineHp: { desc: "lines of max HP %", per: is("Max HP %") },
+  percAtt: { desc: "ATT %", per: val("ATT %") },
+  lineAtt: { desc: "lines of ATT %", per: is("ATT %") },
+  percBoss: { desc: "boss damage %", per: val("Boss Damage %") },
+  lineBoss: { desc: "lines of boss damage", per: is("Boss Damage %") },
+  lineIed: { desc: "lines of IED", per: is("IED %") },
+  lineCritDamage: { desc: "lines of crit damage", per: is("Crit Damage %") },
+  lineMeso: { desc: "lines of meso obtained", per: is("Meso %") },
+  lineDrop: { desc: "lines of item drop rate", per: is("Item Drop %") },
+  lineMesoOrDrop: { desc: "lines of meso or drop", per: is("Meso %", "Item Drop %") },
+  secCooldown: { desc: "seconds of skill cooldown reduction", per: val("Cooldown s") },
+  lineAutoSteal: { desc: "lines of auto steal", per: is("Auto Steal") },
+  lineAttOrBoss: { desc: "lines of ATT % or boss", per: is("ATT %", "Boss Damage %") },
+  lineAttOrBossOrIed: { desc: "lines of ATT %, boss or IED", per: is("ATT %", "Boss Damage %", "IED %") },
+  lineBossOrIed: { desc: "lines of boss or IED", per: is("Boss Damage %", "IED %") },
+};
 
 function parseWant(want) {
   // "percStat=21,lineBoss=1" or an object {percStat: 21}
   if (!want) return {};
-  if (typeof want === "object") return want;
   const out = {};
-  for (const part of String(want).split(/[,&]/).map((s) => s.trim()).filter(Boolean)) {
-    const [k, v] = part.split(/[=+]/);
+  const parts = typeof want === "object" ? Object.entries(want)
+    : String(want).split(/[,&]/).map((s) => s.trim()).filter(Boolean).map((s) => s.split(/[=+]/));
+  for (const [k, v] of parts) {
+    if (!WANTS[k]) throw new Error(`Unknown --want key "${k}". Valid: ${Object.keys(WANTS).join(", ")}`);
     out[k] = (out[k] || 0) + Number(v);
   }
   return out;
 }
 
-function runScenario(calc, s) {
-  const cube = CUBE_ALIASES[String(s.cube).toLowerCase()];
-  if (!cube) throw new Error(`Unknown cube "${s.cube}". Use one of: ${Object.keys(CUBE_ALIASES).join(", ")}`);
-  const item = String(s.item).toLowerCase();
-  if (!ITEM_TYPES.includes(item)) throw new Error(`Unknown item "${s.item}". Use one of: ${ITEM_TYPES.join(", ")}`);
-  const from = TIERS[String(s.from).toLowerCase()];
-  const to = TIERS[String(s.to ?? s.from).toLowerCase()];
-  if (from === undefined || to === undefined) throw new Error("--from/--to must be rare, epic, unique or legendary");
-  if (to < from) throw new Error("--to must be the same tier or higher than --from");
-  if (to > calc.maxCubeTier[cube]) {
-    throw new Error(`${CUBE_LABEL[cube]} cubes can't reach ${TIER_LABEL[to]} (max ${TIER_LABEL[calc.maxCubeTier[cube]]})`);
-  }
-  if (to > from && calc.tier_rates[cube][to - 1] === undefined) {
-    throw new Error(`${CUBE_LABEL[cube]} cube has no tier-up rate for ${TIER_LABEL[to - 1]} -> ${TIER_LABEL[to]}`);
-  }
-  const level = Number(s.level ?? 150);
-  const dmt = Boolean(s.dmt);
-  const want = parseWant(s.want);
-  for (const k of Object.keys(want)) {
-    if (!(k in calc.emptyInputObject)) {
-      throw new Error(`Unknown --want key "${k}". Valid: ${Object.keys(calc.emptyInputObject).join(", ")}`);
+// Chance that one cube rolls lines meeting every target in `want`. Lines are enumerated in order; when an earlier
+// line uses up a family's repeat limit, that family is dropped from later lines and the rest rescaled.
+export function targetChance(lines, want) {
+  const keys = Object.keys(want);
+  const need = keys.map((k) => want[k] - 1e-9);
+  // Merge options that count the same toward the targets and share a limit family.
+  const merged = lines.map((line) => {
+    const groups = new Map();
+    for (const o of line) {
+      const v = keys.map((k) => WANTS[k].per(o));
+      const key = `${o.limit}|${v.join(",")}`;
+      if (groups.has(key)) groups.get(key).p += o.p;
+      else groups.set(key, { p: o.p, v, limit: o.limit });
+    }
+    return [...groups.values()];
+  });
+  const familyMass = merged.map((line) => {
+    const m = LIMITS.map(() => 0);
+    for (const g of line) if (g.limit >= 0) m[g.limit] += g.p;
+    return m;
+  });
+  const used = LIMITS.map(() => 0);
+  const sum = keys.map(() => 0);
+  let total = 0;
+  function walk(i, prob) {
+    if (i === 3) {
+      if (need.every((n, k) => sum[k] >= n)) total += prob;
+      return;
+    }
+    let excluded = 0;
+    LIMITS.forEach((l, f) => { if (used[f] >= l.max) excluded += familyMass[i][f]; });
+    for (const g of merged[i]) {
+      if (g.limit >= 0 && used[g.limit] >= LIMITS[g.limit].max) continue;
+      if (g.limit >= 0) used[g.limit]++;
+      g.v.forEach((x, k) => { sum[k] += x; });
+      walk(i + 1, (prob * g.p) / (1 - excluded));
+      g.v.forEach((x, k) => { sum[k] -= x; });
+      if (g.limit >= 0) used[g.limit]--;
     }
   }
-  const anyStats = Object.keys(want).length === 0;
-  if (!anyStats && level < 71) throw new Error("Stat targets need item level 71+ (calculator limit)");
-
-  const input = Object.assign({}, calc.emptyInputObject, want);
-  const p = anyStats ? 1 : calc.getProbability(to, input, item, cube, level);
-  const tier = calc.getTierCosts(from, to, cube, dmt);
-  const stat = calc.geoDistrQuantile(p);
-  const keys = ["mean", "median", "seventy_fifth", "eighty_fifth", "nintey_fifth"];
-  const statCubes = {}, total = {}, mesos = {};
-  for (const k of keys) {
-    statCubes[k] = anyStats ? 0 : Math.round(stat[k]);
-    total[k] = statCubes[k] + tier[k];
-    mesos[k] = calc.cubingCost(cube, level, total[k]);
-  }
-  const tierRates = [];
-  for (let i = from; i < to; i++) tierRates.push({ step: `${TIER_LABEL[i]}->${TIER_LABEL[i + 1]}`, rate: (dmt ? 2 : 1) * calc.tier_rates[cube][i] });
-
-  // With one phase (a single tier-up, or a stat target at the current tier) the numbers above are exactly
-  // what the website shows. With several phases the website adds up each phase's percentiles, which is not
-  // the percentile of the total, so replace them with the exact distribution of the summed phases.
-  const phases = tierRates.map((t) => t.rate).concat(anyStats ? [] : [p]);
-  const siteMethod = phases.length > 1 ? { totalCubes: { ...total }, totalMesos: { ...mesos } } : undefined;
-  if (phases.length > 1) {
-    const exact = sumOfGeometrics(phases);
-    for (const k of keys) {
-      total[k] = exact[k];
-      mesos[k] = calc.cubingCost(cube, level, total[k]);
-    }
-  }
-  return {
-    label: s.label || null,
-    cube: CUBE_LABEL[cube], item, level, from: TIER_LABEL[from], to: TIER_LABEL[to], dmt, want,
-    tierRates,
-    perCubeTargetChance: anyStats ? null : p,
-    tierUpCubes: tier, targetCubes: statCubes, totalCubes: total, totalMesos: mesos,
-    ...(siteMethod ? { siteMethod } : {}),
-  };
+  walk(0, 1);
+  return total;
 }
+
+// --- Costs --------------------------------------------------------------------------------------------------
+
+const QUANTILES = { median: 0.5, seventy_fifth: 0.75, eighty_fifth: 0.85, nintey_fifth: 0.95 };
 
 // Exact mean and quantiles of the number of cubes needed to clear several geometric phases in a row
 // (e.g. Epic->Unique, then Unique->Legendary, then hitting the stat target).
-function sumOfGeometrics(ps) {
-  const quantiles = { median: 0.5, seventy_fifth: 0.75, eighty_fifth: 0.85, nintey_fifth: 0.95 };
-  const maxN = 1_000_000;
+export function cubesNeeded(ps) {
+  const out = { mean: ps.reduce((a, p) => a + 1 / p, 0) };
+  if (ps.length === 0) return { mean: 0, median: 0, seventy_fifth: 0, eighty_fifth: 0, nintey_fifth: 0 };
   let pmf = new Float64Array([1]); // 0 cubes with certainty before any phase
   for (const p of ps) {
-    const cap = Math.min(maxN, pmf.length + Math.ceil(Math.log(1e-9) / Math.log(1 - p)) + 1);
+    const cap = Math.min(5_000_000, pmf.length + Math.ceil(Math.log(1e-9) / Math.log(1 - p)) + 1);
     const next = new Float64Array(cap);
     for (let n = 1; n < cap; n++) next[n] = p * (n - 1 < pmf.length ? pmf[n - 1] : 0) + (1 - p) * next[n - 1];
     pmf = next;
   }
-  const out = { mean: Math.round(ps.reduce((a, p) => a + 1 / p, 0)) };
   let cdf = 0, n = 0;
-  for (const [k, q] of Object.entries(quantiles)) {
+  for (const [k, q] of Object.entries(QUANTILES)) {
     while (cdf < q && n < pmf.length) cdf += pmf[n++];
     out[k] = n - 1;
   }
   return out;
 }
+
+export function feePerCube(d, level) {
+  const b = d.gms.fee.brackets.find(([lo, hi]) => level >= lo && level <= hi);
+  return b ? b[2] * level ** 2 : 0;
+}
+
+export function runScenario(d, s) {
+  const cube = resolveCube(d, s.cube);
+  const item = resolveItem(d, s.item);
+  const from = TIERS.indexOf(String(s.from).toLowerCase());
+  const to = TIERS.indexOf(String(s.to ?? s.from).toLowerCase());
+  if (from < 0 || to < 0) throw new Error("--from/--to must be rare, epic, unique or legendary");
+  if (to < from) throw new Error("--to must be the same tier or higher than --from");
+  const maxTier = TIERS.indexOf(cube.maxTier);
+  if (to > maxTier) throw new Error(`${cube.label} cubes can't reach ${TIER_LABEL[to]} (max ${TIER_LABEL[maxTier]})`);
+  const level = Number(s.level ?? 150);
+  const dmt = Boolean(s.dmt);
+  const want = parseWant(s.want);
+  const anyLines = Object.keys(want).length === 0;
+
+  const tierRates = [];
+  for (let i = from; i < to; i++) {
+    const rate = cube.tierUp[TIERS[i]] * (dmt && cube.miracleTime ? 2 : 1);
+    tierRates.push({ step: `${TIER_LABEL[i]}->${TIER_LABEL[i + 1]}`, rate });
+  }
+  const p = anyLines ? null : targetChance(lineTables(d, cube, to, item, level), want);
+  if (p === 0) throw new Error(`That target can't roll on a ${TIER_LABEL[to]} Lv. ${level} ${item} with ${cube.label} cubes`);
+
+  const rnd = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Math.round(v)]));
+  const tierUpCubes = rnd(cubesNeeded(tierRates.map((t) => t.rate)));
+  const targetCubes = rnd(cubesNeeded(anyLines ? [] : [p]));
+  const exact = cubesNeeded(tierRates.map((t) => t.rate).concat(anyLines ? [] : [p]));
+  const perCube = cube.price + feePerCube(d, level);
+  const totalMesos = Object.fromEntries(Object.entries(exact).map(([k, v]) => [k, Math.round(v * perCube)]));
+  return {
+    label: s.label || null,
+    cube: cube.label, item, level, from: TIER_LABEL[from], to: TIER_LABEL[to], dmt, want,
+    tierRates,
+    perCubeTargetChance: p,
+    tierUpCubes, targetCubes, totalCubes: rnd(exact), totalMesos,
+  };
+}
+
+// --- MathBro check (online, optional) -----------------------------------------------------------------------
+
+const MATHBRO_URL = "https://brendonmay.github.io/cubingCalculator/";
+const MATHBRO_FILES = ["cubeRates.js", "getProbability.js", "statistics.js", "cubes.js"];
+const MATHBRO_CACHE = process.env.CUBECALC_CACHE || path.join(os.homedir(), ".cache", "maplestory-cubing");
+const MATHBRO_CUBE = { glowing: "red", bright: "black", hard: "master", solid: "meister", mystical: "occult" };
+const MATHBRO_ITEM = { ring: "accessory", face: "accessory", eye: "accessory", earring: "accessory", pendant: "accessory" };
+
+// Node's fetch ignores HTTPS_PROXY unless NODE_USE_ENV_PROXY=1 (Node 22.21+ / 24.5+). Behind a proxy (e.g. the
+// Claude cloud sandbox), rerun this process with that flag set.
+export function useEnvProxy() {
+  const proxied = ["HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy"].some((k) => process.env[k]);
+  if (!proxied || process.env.NODE_USE_ENV_PROXY) return;
+  const r = spawnSync(process.execPath, [...process.execArgv, ...process.argv.slice(1)],
+    { stdio: "inherit", env: { ...process.env, NODE_USE_ENV_PROXY: "1" } });
+  process.exit(r.status ?? 1);
+}
+
+async function loadMathBro(refresh) {
+  if (refresh || !MATHBRO_FILES.every((f) => fs.existsSync(path.join(MATHBRO_CACHE, f)))) {
+    useEnvProxy();
+    fs.mkdirSync(MATHBRO_CACHE, { recursive: true });
+    for (const f of MATHBRO_FILES) {
+      const res = await fetch(MATHBRO_URL + f);
+      if (!res.ok) throw new Error(`Failed to download ${MATHBRO_URL + f}: HTTP ${res.status}`);
+      fs.writeFileSync(path.join(MATHBRO_CACHE, f), await res.text());
+    }
+  }
+  const quiet = () => {};
+  const ctx = vm.createContext({
+    console: { log: quiet, table: quiet, group: quiet, groupCollapsed: quiet, groupEnd: quiet, warn: quiet },
+  });
+  for (const f of MATHBRO_FILES) vm.runInContext(fs.readFileSync(path.join(MATHBRO_CACHE, f), "utf8"), ctx, { filename: f });
+  const api = vm.runInContext("({ getProbability, getTierCosts, cubingCost, emptyInputObject })", ctx);
+  api.dataDate = fs.readFileSync(path.join(MATHBRO_CACHE, "cubeRates.js"), "utf8").split("\n", 1)[0].replace(/^\/\/\s*/, "");
+  return api;
+}
+
+// MathBro's per-cube chance and mean total cubes for the same scenario, or a reason it can't be compared.
+function mathBroResult(mb, r) {
+  const cube = MATHBRO_CUBE[Object.keys(MATHBRO_CUBE).find((k) => r.cube.toLowerCase() === k)];
+  const item = MATHBRO_ITEM[r.item] || r.item;
+  if (["shield", "forceShield"].includes(item)) return { skipped: `MathBro has no ${r.item}` };
+  if (Object.keys(r.want).length && r.level < 71) return { skipped: "MathBro needs Lv. 71+ for targets" };
+  const from = TIER_LABEL.indexOf(r.from), to = TIER_LABEL.indexOf(r.to);
+  const p = Object.keys(r.want).length ? mb.getProbability(to, { ...mb.emptyInputObject, ...r.want }, item, cube, r.level) : null;
+  const tierMean = mb.getTierCosts(from, to, cube, r.dmt).mean;
+  const mean = tierMean + (p ? 1 / p : 0);
+  return { perCubeTargetChance: p, meanCubes: Math.round(mean), meanMesos: Math.round(mb.cubingCost(cube, r.level, mean)) };
+}
+
+// --- Output -------------------------------------------------------------------------------------------------
 
 const fmtB = (m) => (m === 0 ? "0" : `${(m / 1e9).toFixed(2)}B`);
 const pct = (x) => `${(x * 100).toFixed(x < 0.01 ? 3 : 2)}%`;
@@ -185,7 +322,7 @@ const pct = (x) => `${(x * 100).toFixed(x < 0.01 ? 3 : 2)}%`;
 function describe(r) {
   const want = Object.keys(r.want).length ? Object.entries(r.want).map(([k, v]) => `${k}>=${v}`).join(", ") : "any lines";
   const lines = [];
-  lines.push(`${r.label ? r.label + ": " : ""}${r.cube} cube, ${r.item} Lv.${r.level}, ${r.from} -> ${r.to}, want ${want}${r.dmt ? " (DMT)" : ""}`);
+  lines.push(`${r.label ? r.label + ": " : ""}${r.cube} cube, ${r.item} Lv.${r.level}, ${r.from} -> ${r.to}, want ${want}${r.dmt ? " (Miracle Time)" : ""}`);
   if (r.tierRates.length) {
     lines.push(`  Tier-up: ${r.tierRates.map((t) => `${t.step} ${pct(t.rate)}`).join(", ")} -> mean ${r.tierUpCubes.mean} cubes`);
   }
@@ -195,11 +332,64 @@ function describe(r) {
   const t = r.totalCubes, m = r.totalMesos;
   lines.push(`  Total cubes: mean ${t.mean}, median ${t.median}, 75% ${t.seventy_fifth}, 85% ${t.eighty_fifth}, 95% ${t.nintey_fifth}`);
   if (m.mean > 0) {
-    lines.push(`  Mesos (cube price + reveal fee): mean ${fmtB(m.mean)}, median ${fmtB(m.median)}, 75% ${fmtB(m.seventy_fifth)}, 85% ${fmtB(m.eighty_fifth)}, 95% ${fmtB(m.nintey_fifth)}`);
+    lines.push(`  Mesos (cube price + fee): mean ${fmtB(m.mean)}, median ${fmtB(m.median)}, 75% ${fmtB(m.seventy_fifth)}, 85% ${fmtB(m.eighty_fifth)}, 95% ${fmtB(m.nintey_fifth)}`);
   } else {
-    lines.push("  Mesos: not priced (this cube isn't sold for mesos)");
+    lines.push("  Mesos: none (free cube, no fee at this level)");
+  }
+  if (r.check) {
+    const c = r.check;
+    if (c.skipped) lines.push(`  MathBro: not compared (${c.skipped})`);
+    else {
+      const chance = c.perCubeTargetChance === null ? "" : `${pct(c.perCubeTargetChance)} per cube, `;
+      lines.push(`  MathBro: ${chance}mean ${c.meanCubes} cubes, ${fmtB(c.meanMesos)} -> ${c.verdict}`);
+    }
   }
   return lines.join("\n");
+}
+
+function printLines(d, s) {
+  const cube = resolveCube(d, s.cube);
+  const item = resolveItem(d, s.item);
+  const tier = TIERS.indexOf(String(s.tier ?? s.to ?? "legendary").toLowerCase());
+  const level = Number(s.level ?? 150);
+  const lines = lineTables(d, cube, tier, item, level);
+  console.log(`${cube.label} cube, ${TIER_LABEL[tier]} ${item} Lv.${level} (Nexon KMS table${level >= d.gms.statBump.fromLevel && level <= d.gms.statBump.toLevel ? ", +1 GMS Lv. 151+ step" : ""})`);
+  lines.forEach((line, i) => {
+    console.log(`  Line ${i + 1}:`);
+    for (const o of [...line].sort((a, b) => b.p - a.p)) {
+      const name = o.stat ? `${o.stat} ${o.value ?? ""}`.trim() : `(junk) ${o.text}`;
+      const lim = o.limit >= 0 ? `  [max ${LIMITS[o.limit].max}: ${LIMITS[o.limit].family}]` : "";
+      console.log(`    ${pct(o.p).padStart(8)}  ${name}${lim}`);
+    }
+  });
+}
+
+function printRates(d) {
+  const out = {
+    lineData: { source: d.kms.source, fetched: d.kms.fetched, levels: d.kms.levels },
+    limits: LIMITS.map((l) => `max ${l.max}: ${l.family}`),
+    cubes: {},
+    fee: d.gms.fee,
+    statBump: d.gms.statBump,
+  };
+  for (const [key, c] of Object.entries(d.gms.cubes)) {
+    out.cubes[c.label] = {
+      tierUp: c.tierUp, tierUpCounts: c.tierUpCounts, tierUpSource: c.tierUpSource, miracleTime: c.miracleTime,
+      price: c.price, maxTier: c.maxTier, linesFrom: `KMS ${c.kmsLines}`,
+      primeChancePerLine: d.kms.cubes[c.kmsLines].primeChance,
+    };
+  }
+  console.log(JSON.stringify(out, null, 2));
+}
+
+// Warn if Nexon's page lists repeat limits other than the ones this engine applies.
+function checkLimits(d) {
+  for (const [name, c] of Object.entries(d.kms.cubes)) {
+    const listed = c.limitsKo.filter((t) => !t.startsWith("*"));
+    const known = LIMITS.map((l) => l.ko);
+    const extra = listed.filter((t) => !known.includes(t));
+    if (extra.length) console.error(`warning: Nexon's ${name} page lists repeat limits this engine doesn't apply: ${extra.join(", ")}`);
+  }
 }
 
 function parseArgs(argv) {
@@ -217,24 +407,42 @@ function parseArgs(argv) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  await ensureFiles(Boolean(args.refresh));
-  const calc = loadCalculator();
-
-  if (args.rates) {
-    const out = { lineDataDate: calc.lineDataDate, tierUpRates: {}, primeLineRates: {} };
-    for (const [k, v] of Object.entries(calc.tier_rates)) out.tierUpRates[CUBE_LABEL[k]] = v;
-    for (const [k, v] of Object.entries(calc.prime_line_rates)) out.primeLineRates[CUBE_LABEL[k]] = v;
-    console.log(JSON.stringify(out, null, 2));
+  if (args.help || process.argv.length <= 2) {
+    console.log(fs.readFileSync(fileURLToPath(import.meta.url), "utf8").split("\n").slice(1, 15).map((l) => l.replace(/^\/\/ ?/, "")).join("\n"));
+    console.log(`Items: ${["weapon", "emblem", "secondary", "forceShield", "shield", "hat", "top", "overall", "bottom", "shoes", "gloves", "cape", "belt", "shoulder", "face", "eye", "earring", "ring", "pendant", "heart"].join(", ")}; accessory = ring, badge = heart.`);
+    console.log(`Cubes: glowing, bright, hard, solid, mystical (old names red, black, master, meister, occult).`);
+    console.log(`--want keys: ${Object.entries(WANTS).map(([k, w]) => `\n  ${k}: ${w.desc}`).join("")}`);
     return;
   }
-  if (args.refresh && !args.item && !args.batch) { console.log(`Refreshed calculator files in ${CACHE_DIR}`); return; }
+  const d = loadData();
+  checkLimits(d);
+  if (args.rates) { printRates(d); return; }
+  if (args.lines) { printLines(d, args); return; }
 
   const scenarios = args.batch ? JSON.parse(fs.readFileSync(args.batch, "utf8")) : [args];
+  const mb = args.check || args.refresh ? await loadMathBro(Boolean(args.refresh)) : null;
   const results = scenarios.map((s) => {
-    try { return runScenario(calc, s); } catch (e) { return { label: s.label || null, error: e.message }; }
+    try {
+      const r = runScenario(d, s);
+      if (mb) {
+        const c = mathBroResult(mb, r);
+        if (!c.skipped) {
+          const close = (a, b, tol) => Math.abs(a - b) <= tol * Math.max(Math.abs(a), Math.abs(b));
+          const sameP = c.perCubeTargetChance === null || close(r.perCubeTargetChance, c.perCubeTargetChance, 0.01);
+          c.verdict = sameP && Math.abs(r.totalCubes.mean - c.meanCubes) <= Math.max(1, 0.01 * c.meanCubes) ? "match"
+            : `DIFF (chance x${(r.perCubeTargetChance / c.perCubeTargetChance || 1).toFixed(3)}, cubes ${r.totalCubes.mean} vs ${c.meanCubes})`;
+        }
+        r.check = c;
+      }
+      return r;
+    } catch (e) {
+      return { label: s.label || null, error: e.message };
+    }
   });
   if (args.json) { console.log(JSON.stringify(results, null, 2)); return; }
-  for (const r of results) console.log(r.error ? `${r.label ? r.label + ": " : ""}ERROR ${r.error}` : describe(r), "\n");
+  for (const r of results) console.log(`${r.error ? `${r.label ? r.label + ": " : ""}ERROR ${r.error}` : describe(r)}\n`);
+  if (mb) console.error(`MathBro line data: ${mb.dataDate}; ours: Nexon KMS tables fetched ${d.kms.fetched}.`);
 }
 
-main().catch((e) => { console.error(e.message); process.exit(1); });
+const isMain = process.argv[1] && fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url));
+if (isMain) main().catch((e) => { console.error(e.message); process.exit(1); });

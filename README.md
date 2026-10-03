@@ -12,7 +12,8 @@ Command-line calculators for GMS MapleStory upgrade decisions (Heroic worlds), u
 | `hyper_opt.py` | Best hyper stat allocation for a point budget on the damage model. |
 | `symbols.py` | Arcane symbol growth, Arcane Power, mesos and % damage by week from current levels. |
 | `nexon_news.py` | Lists and reads MapleStory GMS news posts (patch notes, events) from Nexon's JSON feed: `list --grep ...`, `get <id> --grep ...`. |
-| `cube_calc.mjs` | Runs [MathBro's cubing calculator](https://brendonmay.github.io/cubingCalculator/) headlessly (Node 18+). Its JS is downloaded from that site at first run and cached in `~/.cache/maplestory-cubing`; it isn't redistributed here. |
+| `cube_calc.mjs` | Cube odds and costs, offline (Node 18+): chance per cube of a line target, cubes and mesos to tier up and hit it. Line odds are Nexon's official tables (`data/cube_lines_kms.json`); GMS tier-up rates, prices and fees are in `data/cube_gms.json` with sources. `--lines` prints what can roll on an item; `--check` compares with [MathBro's calculator](https://brendonmay.github.io/cubingCalculator/) (downloads it). |
+| `cube_rates_fetch.mjs` | Re-downloads Nexon Korea's potential tables into `data/cube_lines_kms.json` (~11,000 requests, ~17 min). Run it when Nexon changes the tables, then `node cube_calc.mjs --batch examples/cube_check_scenarios.json --check`. |
 
 Requirements: Python 3.9+ with numpy, Node 18+ for cubes. Quick start:
 
@@ -23,4 +24,4 @@ python3 star_force.py --level 140 --from 12 --to 21 --sunday --fodder --copies 2
 node cube_calc.mjs --item accessory --cube glowing --from legendary --to legendary --level 140 --want percStat=21
 ```
 
-Odds and costs follow MathBro's calculators, the MapleStory Wiki and Nexon patch notes (v.271, Sept 2026). Cube tier-up rates are unofficial community figures.
+Odds and costs follow Nexon's published tables, MathBro's calculators, the MapleStory Wiki and Nexon patch notes (v.271, Sept 2026). GMS publishes no cube tables: cube line odds are Nexon Korea's official KMS tables, and tier-up rates are unofficial community figures.

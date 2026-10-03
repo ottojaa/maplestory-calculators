@@ -1,0 +1,1105 @@
+[
+ {
+  "label": "Tier-up bright rare->epic",
+  "cube": "bright",
+  "item": "accessory",
+  "from": "rare",
+  "to": "epic",
+  "level": 140
+ },
+ {
+  "label": "Tier-up bright rare->legendary",
+  "cube": "bright",
+  "item": "accessory",
+  "from": "rare",
+  "to": "legendary",
+  "level": 140
+ },
+ {
+  "label": "Tier-up bright epic->unique",
+  "cube": "bright",
+  "item": "accessory",
+  "from": "epic",
+  "to": "unique",
+  "level": 140
+ },
+ {
+  "label": "Tier-up bright epic->legendary",
+  "cube": "bright",
+  "item": "accessory",
+  "from": "epic",
+  "to": "legendary",
+  "level": 140
+ },
+ {
+  "label": "Tier-up glowing epic->unique",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "epic",
+  "to": "unique",
+  "level": 140
+ },
+ {
+  "label": "Tier-up glowing epic->legendary",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "epic",
+  "to": "legendary",
+  "level": 140
+ },
+ {
+  "label": "Tier-up hard epic->unique",
+  "cube": "hard",
+  "item": "accessory",
+  "from": "epic",
+  "to": "unique",
+  "level": 140
+ },
+ {
+  "label": "Tier-up bright unique->legendary",
+  "cube": "bright",
+  "item": "accessory",
+  "from": "unique",
+  "to": "legendary",
+  "level": 140
+ },
+ {
+  "label": "Tier-up glowing unique->legendary",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "unique",
+  "to": "legendary",
+  "level": 140
+ },
+ {
+  "label": "Tier-up hard rare->epic",
+  "cube": "hard",
+  "item": "accessory",
+  "from": "rare",
+  "to": "epic",
+  "level": 140
+ },
+ {
+  "label": "Tier-up solid rare->legendary",
+  "cube": "solid",
+  "item": "accessory",
+  "from": "rare",
+  "to": "legendary",
+  "level": 140
+ },
+ {
+  "label": "Tier-up mystical rare->epic",
+  "cube": "mystical",
+  "item": "accessory",
+  "from": "rare",
+  "to": "epic",
+  "level": 140
+ },
+ {
+  "label": "Tier-up glowing epic->legendary, Miracle Time",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "epic",
+  "to": "legendary",
+  "level": 140,
+  "dmt": true
+ },
+ {
+  "label": "accessory epic->unique 15% STR (hard)",
+  "cube": "hard",
+  "item": "accessory",
+  "from": "epic",
+  "to": "unique",
+  "level": 140,
+  "want": "percStat=15"
+ },
+ {
+  "label": "accessory unique->unique 15% STR (hard)",
+  "cube": "hard",
+  "item": "accessory",
+  "from": "unique",
+  "to": "unique",
+  "level": 140,
+  "want": "percStat=15"
+ },
+ {
+  "label": "accessory epic->legendary 18% STR (bright)",
+  "cube": "bright",
+  "item": "accessory",
+  "from": "epic",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=18"
+ },
+ {
+  "label": "accessory legendary->legendary 18% STR (bright)",
+  "cube": "bright",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=18"
+ },
+ {
+  "label": "accessory legendary->legendary 18% STR (glowing)",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=18"
+ },
+ {
+  "label": "accessory epic->legendary 21% STR (bright)",
+  "cube": "bright",
+  "item": "accessory",
+  "from": "epic",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=21"
+ },
+ {
+  "label": "accessory epic->legendary 21% STR (glowing)",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "epic",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=21"
+ },
+ {
+  "label": "accessory unique->legendary 21% STR (bright)",
+  "cube": "bright",
+  "item": "accessory",
+  "from": "unique",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=21"
+ },
+ {
+  "label": "belt unique->legendary 21% STR (bright)",
+  "cube": "bright",
+  "item": "belt",
+  "from": "unique",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=21"
+ },
+ {
+  "label": "accessory legendary->legendary 21% STR (bright)",
+  "cube": "bright",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=21"
+ },
+ {
+  "label": "accessory legendary->legendary 21% STR (glowing)",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=21"
+ },
+ {
+  "label": "accessory legendary->legendary 24% STR (bright)",
+  "cube": "bright",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=24"
+ },
+ {
+  "label": "accessory legendary->legendary 24% STR (glowing)",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=24"
+ },
+ {
+  "label": "accessory legendary->legendary 30% STR (bright)",
+  "cube": "bright",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=30"
+ },
+ {
+  "label": "accessory legendary->legendary 27% STR (glowing)",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=27"
+ },
+ {
+  "label": "accessory legendary->legendary 33% STR (glowing)",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=33"
+ },
+ {
+  "label": "belt L 18% STR (glowing)",
+  "cube": "glowing",
+  "item": "belt",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=18"
+ },
+ {
+  "label": "belt L 21% STR (glowing)",
+  "cube": "glowing",
+  "item": "belt",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=21"
+ },
+ {
+  "label": "belt L 24% STR (glowing)",
+  "cube": "glowing",
+  "item": "belt",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=24"
+ },
+ {
+  "label": "cape L 18% STR (glowing)",
+  "cube": "glowing",
+  "item": "cape",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=18"
+ },
+ {
+  "label": "cape L 21% STR (glowing)",
+  "cube": "glowing",
+  "item": "cape",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=21"
+ },
+ {
+  "label": "cape L 24% STR (glowing)",
+  "cube": "glowing",
+  "item": "cape",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=24"
+ },
+ {
+  "label": "shoulder L 18% STR (glowing)",
+  "cube": "glowing",
+  "item": "shoulder",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=18"
+ },
+ {
+  "label": "shoulder L 21% STR (glowing)",
+  "cube": "glowing",
+  "item": "shoulder",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=21"
+ },
+ {
+  "label": "shoulder L 24% STR (glowing)",
+  "cube": "glowing",
+  "item": "shoulder",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=24"
+ },
+ {
+  "label": "bottom L 18% STR (glowing)",
+  "cube": "glowing",
+  "item": "bottom",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=18"
+ },
+ {
+  "label": "bottom L 21% STR (glowing)",
+  "cube": "glowing",
+  "item": "bottom",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=21"
+ },
+ {
+  "label": "bottom L 24% STR (glowing)",
+  "cube": "glowing",
+  "item": "bottom",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=24"
+ },
+ {
+  "label": "shoes L 18% STR (glowing)",
+  "cube": "glowing",
+  "item": "shoes",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=18"
+ },
+ {
+  "label": "shoes L 21% STR (glowing)",
+  "cube": "glowing",
+  "item": "shoes",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=21"
+ },
+ {
+  "label": "shoes L 24% STR (glowing)",
+  "cube": "glowing",
+  "item": "shoes",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=24"
+ },
+ {
+  "label": "hat L 18% STR (glowing)",
+  "cube": "glowing",
+  "item": "hat",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=18"
+ },
+ {
+  "label": "hat L 21% STR (glowing)",
+  "cube": "glowing",
+  "item": "hat",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=21"
+ },
+ {
+  "label": "hat L 24% STR (glowing)",
+  "cube": "glowing",
+  "item": "hat",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=24"
+ },
+ {
+  "label": "gloves L 18% STR (glowing)",
+  "cube": "glowing",
+  "item": "gloves",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=18"
+ },
+ {
+  "label": "gloves L 21% STR (glowing)",
+  "cube": "glowing",
+  "item": "gloves",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=21"
+ },
+ {
+  "label": "gloves L 24% STR (glowing)",
+  "cube": "glowing",
+  "item": "gloves",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=24"
+ },
+ {
+  "label": "top L 18% STR (glowing)",
+  "cube": "glowing",
+  "item": "top",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=18"
+ },
+ {
+  "label": "top L 21% STR (glowing)",
+  "cube": "glowing",
+  "item": "top",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=21"
+ },
+ {
+  "label": "top L 24% STR (glowing)",
+  "cube": "glowing",
+  "item": "top",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=24"
+ },
+ {
+  "label": "overall L 18% STR (glowing)",
+  "cube": "glowing",
+  "item": "overall",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=18"
+ },
+ {
+  "label": "overall L 21% STR (glowing)",
+  "cube": "glowing",
+  "item": "overall",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=21"
+ },
+ {
+  "label": "overall L 24% STR (glowing)",
+  "cube": "glowing",
+  "item": "overall",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=24"
+ },
+ {
+  "label": "heart L 18% STR (glowing)",
+  "cube": "glowing",
+  "item": "heart",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=18"
+ },
+ {
+  "label": "heart L 21% STR (glowing)",
+  "cube": "glowing",
+  "item": "heart",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=21"
+ },
+ {
+  "label": "heart L 24% STR (glowing)",
+  "cube": "glowing",
+  "item": "heart",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percStat=24"
+ },
+ {
+  "label": "top Lv.160 epic->legendary 23% STR (glowing)",
+  "cube": "glowing",
+  "item": "top",
+  "from": "epic",
+  "to": "legendary",
+  "level": 160,
+  "want": "percStat=23"
+ },
+ {
+  "label": "weapon epic->legendary lineAtt=1 (bright)",
+  "cube": "bright",
+  "item": "weapon",
+  "from": "epic",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAtt=1"
+ },
+ {
+  "label": "weapon legendary->legendary lineAtt=1,lineAttOrBossOrIed=3 (bright)",
+  "cube": "bright",
+  "item": "weapon",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAtt=1,lineAttOrBossOrIed=3"
+ },
+ {
+  "label": "weapon legendary->legendary lineAtt=1,lineBoss=1 (bright)",
+  "cube": "bright",
+  "item": "weapon",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAtt=1,lineBoss=1"
+ },
+ {
+  "label": "weapon legendary->legendary lineAtt=1,lineBoss=1 (glowing)",
+  "cube": "glowing",
+  "item": "weapon",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAtt=1,lineBoss=1"
+ },
+ {
+  "label": "weapon rare->legendary lineAttOrBoss=2 (bright)",
+  "cube": "bright",
+  "item": "weapon",
+  "from": "rare",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAttOrBoss=2"
+ },
+ {
+  "label": "weapon epic->legendary lineAttOrBoss=2 (bright)",
+  "cube": "bright",
+  "item": "weapon",
+  "from": "epic",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAttOrBoss=2"
+ },
+ {
+  "label": "weapon epic->legendary lineAttOrBoss=2 (glowing)",
+  "cube": "glowing",
+  "item": "weapon",
+  "from": "epic",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAttOrBoss=2"
+ },
+ {
+  "label": "weapon unique->legendary lineAttOrBoss=2 (bright)",
+  "cube": "bright",
+  "item": "weapon",
+  "from": "unique",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAttOrBoss=2"
+ },
+ {
+  "label": "weapon legendary->legendary lineAttOrBoss=2 (bright)",
+  "cube": "bright",
+  "item": "weapon",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAttOrBoss=2"
+ },
+ {
+  "label": "weapon legendary->legendary lineAttOrBoss=2 (glowing)",
+  "cube": "glowing",
+  "item": "weapon",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAttOrBoss=2"
+ },
+ {
+  "label": "weapon unique->unique lineAttOrBossOrIed=2 (hard)",
+  "cube": "hard",
+  "item": "weapon",
+  "from": "unique",
+  "to": "unique",
+  "level": 150,
+  "want": "lineAttOrBossOrIed=2"
+ },
+ {
+  "label": "weapon legendary->legendary percAtt=21 (bright)",
+  "cube": "bright",
+  "item": "weapon",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percAtt=21"
+ },
+ {
+  "label": "weapon legendary->legendary percAtt=21 (glowing)",
+  "cube": "glowing",
+  "item": "weapon",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percAtt=21"
+ },
+ {
+  "label": "weapon legendary->legendary lineAttOrBossOrIed=2 (glowing)",
+  "cube": "glowing",
+  "item": "weapon",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAttOrBossOrIed=2"
+ },
+ {
+  "label": "weapon legendary->legendary lineAttOrBossOrIed=3 (glowing)",
+  "cube": "glowing",
+  "item": "weapon",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAttOrBossOrIed=3"
+ },
+ {
+  "label": "weapon legendary->legendary lineAttOrBoss=3 (glowing)",
+  "cube": "glowing",
+  "item": "weapon",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAttOrBoss=3"
+ },
+ {
+  "label": "weapon legendary->legendary lineAtt=2 (glowing)",
+  "cube": "glowing",
+  "item": "weapon",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAtt=2"
+ },
+ {
+  "label": "weapon legendary->legendary lineAtt=2,lineBoss=1 (glowing)",
+  "cube": "glowing",
+  "item": "weapon",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "lineAtt=2,lineBoss=1"
+ },
+ {
+  "label": "weapon legendary->legendary percAtt=30 (glowing)",
+  "cube": "glowing",
+  "item": "weapon",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "percAtt=30"
+ },
+ {
+  "label": "weapon unique->unique lineAttOrBossOrIed=2 (glowing)",
+  "cube": "glowing",
+  "item": "weapon",
+  "from": "unique",
+  "to": "unique",
+  "level": 150,
+  "want": "lineAttOrBossOrIed=2"
+ },
+ {
+  "label": "weapon unique->unique lineAttOrBoss=2 (glowing)",
+  "cube": "glowing",
+  "item": "weapon",
+  "from": "unique",
+  "to": "unique",
+  "level": 150,
+  "want": "lineAttOrBoss=2"
+ },
+ {
+  "label": "weapon unique->unique lineAtt=1 (glowing)",
+  "cube": "glowing",
+  "item": "weapon",
+  "from": "unique",
+  "to": "unique",
+  "level": 150,
+  "want": "lineAtt=1"
+ },
+ {
+  "label": "secondary legendary->legendary lineAtt=1 (glowing)",
+  "cube": "glowing",
+  "item": "secondary",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "lineAtt=1"
+ },
+ {
+  "label": "secondary legendary->legendary lineAttOrBoss=2 (glowing)",
+  "cube": "glowing",
+  "item": "secondary",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "lineAttOrBoss=2"
+ },
+ {
+  "label": "secondary legendary->legendary lineAtt=1,lineBoss=1 (glowing)",
+  "cube": "glowing",
+  "item": "secondary",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "lineAtt=1,lineBoss=1"
+ },
+ {
+  "label": "emblem legendary->legendary lineAtt=1 (glowing)",
+  "cube": "glowing",
+  "item": "emblem",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "lineAtt=1"
+ },
+ {
+  "label": "emblem legendary->legendary lineAtt=1,lineIed=1 (glowing)",
+  "cube": "glowing",
+  "item": "emblem",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "lineAtt=1,lineIed=1"
+ },
+ {
+  "label": "emblem legendary->legendary lineAttOrBossOrIed=2 (glowing)",
+  "cube": "glowing",
+  "item": "emblem",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "lineAttOrBossOrIed=2"
+ },
+ {
+  "label": "secondary unique->unique lineAttOrBossOrIed=2 (hard)",
+  "cube": "hard",
+  "item": "secondary",
+  "from": "unique",
+  "to": "unique",
+  "level": 140,
+  "want": "lineAttOrBossOrIed=2"
+ },
+ {
+  "label": "secondary unique->unique lineAttOrBossOrIed=2 (glowing)",
+  "cube": "glowing",
+  "item": "secondary",
+  "from": "unique",
+  "to": "unique",
+  "level": 140,
+  "want": "lineAttOrBossOrIed=2"
+ },
+ {
+  "label": "emblem unique->unique lineAttOrBossOrIed=2 (hard)",
+  "cube": "hard",
+  "item": "emblem",
+  "from": "unique",
+  "to": "unique",
+  "level": 140,
+  "want": "lineAttOrBossOrIed=2"
+ },
+ {
+  "label": "gloves legendary->legendary lineCritDamage=1 (glowing)",
+  "cube": "glowing",
+  "item": "gloves",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 160,
+  "want": "lineCritDamage=1"
+ },
+ {
+  "label": "gloves legendary->legendary lineCritDamage=2 (glowing)",
+  "cube": "glowing",
+  "item": "gloves",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 160,
+  "want": "lineCritDamage=2"
+ },
+ {
+  "label": "gloves legendary->legendary lineCritDamage=2 (bright)",
+  "cube": "bright",
+  "item": "gloves",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 160,
+  "want": "lineCritDamage=2"
+ },
+ {
+  "label": "gloves legendary->legendary lineCritDamage=1,lineStat=1 (glowing)",
+  "cube": "glowing",
+  "item": "gloves",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 160,
+  "want": "lineCritDamage=1,lineStat=1"
+ },
+ {
+  "label": "gloves epic->legendary lineCritDamage=1 (glowing)",
+  "cube": "glowing",
+  "item": "gloves",
+  "from": "epic",
+  "to": "legendary",
+  "level": 160,
+  "want": "lineCritDamage=1"
+ },
+ {
+  "label": "hat legendary->legendary secCooldown=2 (glowing)",
+  "cube": "glowing",
+  "item": "hat",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "secCooldown=2"
+ },
+ {
+  "label": "hat legendary->legendary secCooldown=2,lineStat=1 (glowing)",
+  "cube": "glowing",
+  "item": "hat",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "secCooldown=2,lineStat=1"
+ },
+ {
+  "label": "hat legendary->legendary secCooldown=3 (glowing)",
+  "cube": "glowing",
+  "item": "hat",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 150,
+  "want": "secCooldown=3"
+ },
+ {
+  "label": "accessory legendary->legendary lineMesoOrDrop=1 (glowing)",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "lineMesoOrDrop=1"
+ },
+ {
+  "label": "accessory legendary->legendary lineDrop=1,lineStat=1 (glowing)",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "lineDrop=1,lineStat=1"
+ },
+ {
+  "label": "accessory legendary->legendary lineMesoOrDrop=2 (glowing)",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "lineMesoOrDrop=2"
+ },
+ {
+  "label": "accessory legendary->legendary lineMesoOrDrop=2 (bright)",
+  "cube": "bright",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "lineMesoOrDrop=2"
+ },
+ {
+  "label": "accessory legendary->legendary lineMesoOrDrop=1,percStat=9 (glowing)",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "lineMesoOrDrop=1,percStat=9"
+ },
+ {
+  "label": "accessory unique->unique percStat=12 (hard)",
+  "cube": "hard",
+  "item": "accessory",
+  "from": "unique",
+  "to": "unique",
+  "level": 140,
+  "want": "percStat=12"
+ },
+ {
+  "label": "accessory unique->unique percStat=15 (glowing)",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "unique",
+  "to": "unique",
+  "level": 140,
+  "want": "percStat=15"
+ },
+ {
+  "label": "accessory unique->unique percStat=18 (hard)",
+  "cube": "hard",
+  "item": "accessory",
+  "from": "unique",
+  "to": "unique",
+  "level": 140,
+  "want": "percStat=18"
+ },
+ {
+  "label": "top unique->unique percStat=15 (hard)",
+  "cube": "hard",
+  "item": "top",
+  "from": "unique",
+  "to": "unique",
+  "level": 140,
+  "want": "percStat=15"
+ },
+ {
+  "label": "top unique->unique percStat=15 (glowing)",
+  "cube": "glowing",
+  "item": "top",
+  "from": "unique",
+  "to": "unique",
+  "level": 140,
+  "want": "percStat=15"
+ },
+ {
+  "label": "accessory epic->epic percStat=9 (mystical)",
+  "cube": "mystical",
+  "item": "accessory",
+  "from": "epic",
+  "to": "epic",
+  "level": 140,
+  "want": "percStat=9"
+ },
+ {
+  "label": "accessory epic->epic percStat=12 (mystical)",
+  "cube": "mystical",
+  "item": "accessory",
+  "from": "epic",
+  "to": "epic",
+  "level": 140,
+  "want": "percStat=12"
+ },
+ {
+  "label": "Oct 3: Dominator Pendant L 21% STR",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=21"
+ },
+ {
+  "label": "Oct 3: Dominator Pendant L 21% STR (pendant table)",
+  "cube": "glowing",
+  "item": "pendant",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=21"
+ },
+ {
+  "label": "Oct 3: Face (CPC) Lv.110 E->L drop/meso + 9% STR",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "epic",
+  "to": "legendary",
+  "level": 110,
+  "want": "lineMesoOrDrop=1,percStat=9"
+ },
+ {
+  "label": "Oct 3: Face (CPC) Lv.110 E->L drop/meso + 9% STR (face table)",
+  "cube": "glowing",
+  "item": "face",
+  "from": "epic",
+  "to": "legendary",
+  "level": 110,
+  "want": "lineMesoOrDrop=1,percStat=9"
+ },
+ {
+  "label": "Oct 3: Eye (Aquatic) Lv.100 E->L drop/meso + 9% STR",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "epic",
+  "to": "legendary",
+  "level": 100,
+  "want": "lineMesoOrDrop=1,percStat=9"
+ },
+ {
+  "label": "Oct 3: Eye (Aquatic) Lv.100 E->L drop/meso + 9% STR (eye table)",
+  "cube": "glowing",
+  "item": "eye",
+  "from": "epic",
+  "to": "legendary",
+  "level": 100,
+  "want": "lineMesoOrDrop=1,percStat=9"
+ },
+ {
+  "label": "Oct 3: Onyx Imugi Gem U->L 2 ATT/boss lines",
+  "cube": "glowing",
+  "item": "secondary",
+  "from": "unique",
+  "to": "legendary",
+  "level": 140,
+  "want": "lineAttOrBoss=2"
+ },
+ {
+  "label": "Oct 3: accessory L drop/meso + 9% STR",
+  "cube": "glowing",
+  "item": "accessory",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "lineMesoOrDrop=1,percStat=9"
+ },
+ {
+  "label": "Oct 3: ring Lv.140 L drop/meso + 9% STR",
+  "cube": "glowing",
+  "item": "ring",
+  "from": "legendary",
+  "to": "legendary",
+  "level": 140,
+  "want": "lineMesoOrDrop=1,percStat=9"
+ },
+ {
+  "label": "Oct 3: ring Lv.140 E->L 21% STR",
+  "cube": "glowing",
+  "item": "ring",
+  "from": "epic",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=21"
+ },
+ {
+  "label": "John's Ring Lv.125 E->L 21% STR",
+  "cube": "glowing",
+  "item": "ring",
+  "from": "epic",
+  "to": "legendary",
+  "level": 125,
+  "want": "percStat=21"
+ },
+ {
+  "label": "Golden Clover Belt Lv.140 U->L 21% STR",
+  "cube": "glowing",
+  "item": "belt",
+  "from": "unique",
+  "to": "legendary",
+  "level": 140,
+  "want": "percStat=21"
+ },
+ {
+  "label": "Silver Blossom Ring Lv.110 E->L",
+  "cube": "glowing",
+  "item": "ring",
+  "from": "epic",
+  "to": "legendary",
+  "level": 110
+ }
+]

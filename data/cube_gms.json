@@ -1,0 +1,79 @@
+{
+ "about": "GMS (Heroic) cube numbers that Nexon doesn't publish for GMS. Line odds come from cube_lines_kms.json (Nexon Korea's official tables); 'kmsLines' names the KMS cube whose lines each GMS cube is taken to share. tierUp is keyed by the tier being left: rare = Rare->Epic, epic = Epic->Unique, unique = Unique->Legendary.",
+ "updated": "2026-10-04",
+ "cubes": {
+  "glowing": {
+   "label": "Glowing",
+   "aliases": ["red"],
+   "kmsLines": "red",
+   "maxTier": "legendary",
+   "tierUp": {"rare": 0.14, "epic": 0.06, "unique": 0.025},
+   "tierUpCounts": {"rare": [151, 1071], "epic": [338, 5578], "unique": [344, 14021]},
+   "tierUpSource": "community",
+   "miracleTime": true,
+   "price": 12000000,
+   "priceSource": "Heroic Cube Shop: 10-200 cube coupons at a flat 12M each (maplestorywiki.net/w/Heroic_Cube_Shop)"
+  },
+  "bright": {
+   "label": "Bright",
+   "aliases": ["black"],
+   "kmsLines": "black",
+   "maxTier": "legendary",
+   "tierUp": {"rare": 0.17, "epic": 0.11, "unique": 0.05},
+   "tierUpCounts": {"rare": [67, 398], "epic": [280, 2507], "unique": [304, 6416]},
+   "tierUpSource": "community",
+   "miracleTime": true,
+   "price": 22000000,
+   "priceSource": "Heroic Cube Shop: 10-200 cube coupons at a flat 22M each (maplestorywiki.net/w/Heroic_Cube_Shop)"
+  },
+  "hard": {
+   "label": "Hard",
+   "aliases": ["master"],
+   "kmsLines": "master",
+   "maxTier": "unique",
+   "tierUp": {"rare": 0.1184, "epic": 0.0381},
+   "tierUpCounts": {"rare": [247, 2087], "epic": [276, 7238]},
+   "tierUpSource": "community",
+   "miracleTime": false,
+   "price": 7500000,
+   "priceSource": "NPC shops at 7.5M (maplestorywiki.net/w/Hard_Cube)"
+  },
+  "solid": {
+   "label": "Solid",
+   "aliases": ["meister"],
+   "kmsLines": "artisan",
+   "maxTier": "legendary",
+   "tierUp": {"rare": 0.1163, "epic": 0.0879, "unique": 0.0459},
+   "tierUpCounts": {"rare": [5, 43], "epic": [21, 239], "unique": [21, 458]},
+   "tierUpSource": "community (small samples)",
+   "miracleTime": false,
+   "price": 0,
+   "priceSource": "not sold; boss and event drops, so only the fee is counted"
+  },
+  "mystical": {
+   "label": "Mystical",
+   "aliases": ["occult"],
+   "kmsLines": "strange",
+   "maxTier": "epic",
+   "tierUp": {"rare": 0.009901},
+   "tierUpCounts": {"rare": [10, 1100]},
+   "tierUpSource": "Nexon Korea's official Occult Cube rate (0.9901%); the community count (0.91%) agrees within sampling error",
+   "miracleTime": false,
+   "price": 0,
+   "priceSource": "not sold; boss drops, so only the fee is counted"
+  }
+ },
+ "tierUpNote": "GMS tier-up rates aren't published (KMS's official ones are far lower: Red 6 / 1.8 / 0.3%). 'community' = the '[Post-Reboot] Cubing rates v170+' sheet, tab 'Non-(D)MT - All Sources' (https://docs.google.com/spreadsheets/d/1od_hep5Y6x2ljfrh4M8zj5RwlpgYDRn5uTymx4iLPyw/pubhtml), counts read 2026-10-04 as [tier-ups, cubes used]. It was recorded with Red/Black cubes before GMS's v.239 cube revamp. Glowing and Bright are rounded to the precision their samples support (measured 14.10 / 6.06 / 2.45% and 16.83 / 11.17 / 4.74%, each within one standard error of the rounded value). Miracle Time doubles Glowing and Bright tier-up rates only. 2-rank jumps are ignored.",
+ "fee": {
+  "formula": "per cube: constant x item level^2, constant by item level",
+  "brackets": [[0, 29, 0], [30, 70, 0.5], [71, 120, 2.5], [121, 250, 20]],
+  "source": "community formula (e.g. 392,000 mesos per cube at Lv. 140); not yet checked against the in-game cube window"
+ },
+ "statBump": {
+  "fromLevel": 151,
+  "toLevel": 200,
+  "plus": 1,
+  "options": ["STR %", "DEX %", "INT %", "LUK %", "All Stats %", "ATT %", "MATT %", "Max HP %"],
+  "source": "maplestorywiki.net/w/Potential: GMS/TMS stat values go up one step from Lv. 151. In game (Oct 2026): Ren's Lv. 160 Challenger sword shows Unique ATT 7% (KMS table 6%). KMS's own tables add the step only from Lv. 201, so it is applied here for Lv. 151-200."
+ }
+}
