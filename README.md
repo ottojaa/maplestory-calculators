@@ -11,6 +11,7 @@ Command-line calculators for GMS MapleStory upgrade decisions (Heroic worlds), u
 | `flames.py` | Flame (bonus stat) odds and reset costs for a STR warrior. |
 | `hyper_opt.py` | Best hyper stat allocation for a point budget on the damage model. |
 | `symbols.py` | Arcane symbol growth, Arcane Power, mesos and % damage by week from current levels. |
+| `nexon_news.py` | Lists and reads MapleStory GMS news posts (patch notes, events) from Nexon's JSON feed: `list --grep ...`, `get <id> --grep ...`. |
 | `cube_calc.mjs` | Runs [MathBro's cubing calculator](https://brendonmay.github.io/cubingCalculator/) headlessly (Node 18+). Its JS is downloaded from that site at first run and cached in `~/.cache/maplestory-cubing`; it isn't redistributed here. |
 
 Requirements: Python 3.9+ with numpy, Node 18+ for cubes. Quick start:
