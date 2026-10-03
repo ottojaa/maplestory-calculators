@@ -1,0 +1,85 @@
+[
+ {
+  "label": "Dominator Pendant: Legendary 21% STR",
+  "change": "main_pct=21",
+  "cost": {
+   "type": "cube",
+   "item": "accessory",
+   "cube": "glowing",
+   "from": "legendary",
+   "to": "legendary",
+   "level": 140,
+   "want": "percStat=21"
+  },
+  "group": "pendant"
+ },
+ {
+  "label": "Face (CPC): Epic to L, drop/meso + 9% STR",
+  "change": "main_pct=9",
+  "cost": {
+   "type": "cube",
+   "item": "accessory",
+   "cube": "glowing",
+   "from": "epic",
+   "to": "legendary",
+   "level": 110,
+   "want": "lineMesoOrDrop=1,percStat=9"
+  },
+  "group": "face",
+  "note": "drop/meso line not counted in damage",
+  "pin": true
+ },
+ {
+  "label": "Eye (Aquatic): Epic to L, drop/meso + 9% STR",
+  "change": "main_pct=9",
+  "cost": {
+   "type": "cube",
+   "item": "accessory",
+   "cube": "glowing",
+   "from": "epic",
+   "to": "legendary",
+   "level": 100,
+   "want": "lineMesoOrDrop=1,percStat=9"
+  },
+  "group": "eye",
+  "note": "drop/meso line not counted in damage",
+  "pin": true
+ },
+ {
+  "label": "Onyx Imugi Gem: Unique to L, 2 ATT/boss lines",
+  "gain_pct": 9.4,
+  "cost": {
+   "type": "cube",
+   "item": "secondary",
+   "cube": "glowing",
+   "from": "unique",
+   "to": "legendary",
+   "level": 140,
+   "want": "lineAttOrBoss=2"
+  },
+  "group": "gem",
+  "note": "gain is the plan's +8.5-10.4% midpoint (hand-entered)"
+ },
+ {
+  "label": "One Lv. 140 accessory 12 to 17 stars (Sunny Sunday)",
+  "change": "flat_main=27,att=17",
+  "cost": {
+   "type": "starforce",
+   "level": 140,
+   "from": 12,
+   "to": 17,
+   "sunday": true
+  },
+  "note": "stars carry to a Lv. 150 item by Equipment Transfer, minus one"
+ },
+ {
+  "label": "Flames on 6 boss accessories (~+50 score each)",
+  "gain_pct": 7.0,
+  "cost": {
+   "type": "fixed",
+   "mesos": 750000000.0,
+   "p75": 1000000000.0
+  },
+  "note": "hand-entered from the plan; 3M per reset"
+ }
+]
