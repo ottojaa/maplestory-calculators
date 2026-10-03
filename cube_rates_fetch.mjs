@@ -107,7 +107,7 @@ function parsePage(html) {
   const prime = {};
   const nTiers = body[0].length / 2;
   for (let i = 0; i < nTiers; i++) {
-    prime[TIER[i + 1]] = [body[0], body[1], body[3]].map((r) => pct(r[2 * i + 1]) / 100);
+    prime[TIER[i + 1]] = [body[0], body[1], body[3]].map((r) => Number((pct(r[2 * i + 1]) / 100).toPrecision(8)));
   }
   const limitsKo = [...html.matchAll(/<div class="gray_box">([\s\S]*?)<\/div>/g)].map((m) =>
     [...m[1].matchAll(/<li>([\s\S]*?)<\/li>/g)].map((li) => text(li[1]))).flat();
