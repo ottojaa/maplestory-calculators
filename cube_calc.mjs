@@ -1,23 +1,20 @@
 #!/usr/bin/env node
-// Cube odds and costs for GMS (Heroic), computed offline.
+// Cube odds and costs for GMS (Heroic), computed offline from data in this repo.
 //
-// Line odds: data/cube_lines_kms.json, Nexon Korea's official per-line potential tables (GMS publishes none;
-// refresh with cube_rates_fetch.mjs). GMS numbers Nexon doesn't publish (tier-up rates, cube prices, the per-cube
-// meso fee, the Lv. 151+ stat step) are in data/cube_gms.json, each with its source.
-// --check also runs MathBro's calculator (https://brendonmay.github.io/cubingCalculator/), downloaded once into
-// ~/.cache/maplestory-cubing, and prints both results side by side. Nothing else needs the network.
+// Line odds: data/cube_lines_kms.json, a copy of Nexon Korea's official per-line potential tables (GMS publishes
+// none); the file says where and how it was copied. GMS numbers Nexon doesn't publish (tier-up rates, cube prices,
+// the per-cube meso fee, the Lv. 151+ stat step) are in data/cube_gms.json, each with its source.
+// Scenarios with an "expect" field are checked against it: examples/cube_check_scenarios.json holds MathBro's
+// results (https://brendonmay.github.io/cubingCalculator/, 2026-10-04) for 124 scenarios; all should say "match".
 //
 // Usage:
 //   node cube_calc.mjs --item ring --cube glowing --from epic --to legendary --level 140 --want percStat=21
-//   node cube_calc.mjs --batch scenarios.json [--json] [--check]
+//   node cube_calc.mjs --batch scenarios.json [--json]
 //   node cube_calc.mjs --lines --item weapon --cube glowing --to legendary --level 150
 //   node cube_calc.mjs --rates
 
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
-import vm from "node:vm";
-import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -263,55 +260,16 @@ export function runScenario(d, s) {
   };
 }
 
-// --- MathBro check (online, optional) -----------------------------------------------------------------------
+// --- Expected results ---------------------------------------------------------------------------------------
 
-const MATHBRO_URL = "https://brendonmay.github.io/cubingCalculator/";
-const MATHBRO_FILES = ["cubeRates.js", "getProbability.js", "statistics.js", "cubes.js"];
-const MATHBRO_CACHE = process.env.CUBECALC_CACHE || path.join(os.homedir(), ".cache", "maplestory-cubing");
-const MATHBRO_CUBE = { glowing: "red", bright: "black", hard: "master", solid: "meister", mystical: "occult" };
-const MATHBRO_ITEM = { ring: "accessory", face: "accessory", eye: "accessory", earring: "accessory", pendant: "accessory" };
-
-// Node's fetch ignores HTTPS_PROXY unless NODE_USE_ENV_PROXY=1 (Node 22.21+ / 24.5+). Behind a proxy (e.g. the
-// Claude cloud sandbox), rerun this process with that flag set.
-export function useEnvProxy() {
-  const proxied = ["HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy"].some((k) => process.env[k]);
-  if (!proxied || process.env.NODE_USE_ENV_PROXY) return;
-  const r = spawnSync(process.execPath, [...process.execArgv, ...process.argv.slice(1)],
-    { stdio: "inherit", env: { ...process.env, NODE_USE_ENV_PROXY: "1" } });
-  process.exit(r.status ?? 1);
-}
-
-async function loadMathBro(refresh) {
-  if (refresh || !MATHBRO_FILES.every((f) => fs.existsSync(path.join(MATHBRO_CACHE, f)))) {
-    useEnvProxy();
-    fs.mkdirSync(MATHBRO_CACHE, { recursive: true });
-    for (const f of MATHBRO_FILES) {
-      const res = await fetch(MATHBRO_URL + f);
-      if (!res.ok) throw new Error(`Failed to download ${MATHBRO_URL + f}: HTTP ${res.status}`);
-      fs.writeFileSync(path.join(MATHBRO_CACHE, f), await res.text());
-    }
-  }
-  const quiet = () => {};
-  const ctx = vm.createContext({
-    console: { log: quiet, table: quiet, group: quiet, groupCollapsed: quiet, groupEnd: quiet, warn: quiet },
-  });
-  for (const f of MATHBRO_FILES) vm.runInContext(fs.readFileSync(path.join(MATHBRO_CACHE, f), "utf8"), ctx, { filename: f });
-  const api = vm.runInContext("({ getProbability, getTierCosts, cubingCost, emptyInputObject })", ctx);
-  api.dataDate = fs.readFileSync(path.join(MATHBRO_CACHE, "cubeRates.js"), "utf8").split("\n", 1)[0].replace(/^\/\/\s*/, "");
-  return api;
-}
-
-// MathBro's per-cube chance and mean total cubes for the same scenario, or a reason it can't be compared.
-function mathBroResult(mb, r) {
-  const cube = MATHBRO_CUBE[Object.keys(MATHBRO_CUBE).find((k) => r.cube.toLowerCase() === k)];
-  const item = MATHBRO_ITEM[r.item] || r.item;
-  if (["shield", "forceShield"].includes(item)) return { skipped: `MathBro has no ${r.item}` };
-  if (Object.keys(r.want).length && r.level < 71) return { skipped: "MathBro needs Lv. 71+ for targets" };
-  const from = TIER_LABEL.indexOf(r.from), to = TIER_LABEL.indexOf(r.to);
-  const p = Object.keys(r.want).length ? mb.getProbability(to, { ...mb.emptyInputObject, ...r.want }, item, cube, r.level) : null;
-  const tierMean = mb.getTierCosts(from, to, cube, r.dmt).mean;
-  const mean = tierMean + (p ? 1 / p : 0);
-  return { perCubeTargetChance: p, meanCubes: Math.round(mean), meanMesos: Math.round(mb.cubingCost(cube, r.level, mean)) };
+// Compare a result with a scenario's "expect" ({p, meanCubes}): per-cube chance within 1%, mean cubes within 1
+// (1% for long runs).
+function checkExpected(r, e) {
+  const pOk = e.p === undefined || Math.abs((r.perCubeTargetChance ?? 0) - e.p) <= 0.01 * e.p;
+  const cubesOk = Math.abs(r.totalCubes.mean - e.meanCubes) <= Math.max(1, 0.01 * e.meanCubes);
+  if (pOk && cubesOk) return "match";
+  const p = e.p === undefined ? "" : `chance ${pct(r.perCubeTargetChance ?? 0)} vs ${pct(e.p)}, `;
+  return `DIFF (${p}mean cubes ${r.totalCubes.mean} vs ${e.meanCubes})`;
 }
 
 // --- Output -------------------------------------------------------------------------------------------------
@@ -336,14 +294,7 @@ function describe(r) {
   } else {
     lines.push("  Mesos: none (free cube, no fee at this level)");
   }
-  if (r.check) {
-    const c = r.check;
-    if (c.skipped) lines.push(`  MathBro: not compared (${c.skipped})`);
-    else {
-      const chance = c.perCubeTargetChance === null ? "" : `${pct(c.perCubeTargetChance)} per cube, `;
-      lines.push(`  MathBro: ${chance}mean ${c.meanCubes} cubes, ${fmtB(c.meanMesos)} -> ${c.verdict}`);
-    }
-  }
+  if (r.expected) lines.push(`  Expected: ${r.expected}`);
   return lines.join("\n");
 }
 
@@ -405,7 +356,7 @@ function parseArgs(argv) {
   return a;
 }
 
-async function main() {
+function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help || process.argv.length <= 2) {
     console.log(fs.readFileSync(fileURLToPath(import.meta.url), "utf8").split("\n").slice(1, 15).map((l) => l.replace(/^\/\/ ?/, "")).join("\n"));
@@ -414,26 +365,19 @@ async function main() {
     console.log(`--want keys: ${Object.entries(WANTS).map(([k, w]) => `\n  ${k}: ${w.desc}`).join("")}`);
     return;
   }
+  const known = ["item", "cube", "from", "to", "tier", "level", "want", "dmt", "label", "batch", "json", "lines", "rates"];
+  const unknown = Object.keys(args).filter((k) => !known.includes(k));
+  if (unknown.length) throw new Error(`Unknown flag ${unknown.map((k) => `--${k}`).join(", ")}. See --help.`);
   const d = loadData();
   checkLimits(d);
   if (args.rates) { printRates(d); return; }
   if (args.lines) { printLines(d, args); return; }
 
   const scenarios = args.batch ? JSON.parse(fs.readFileSync(args.batch, "utf8")) : [args];
-  const mb = args.check || args.refresh ? await loadMathBro(Boolean(args.refresh)) : null;
   const results = scenarios.map((s) => {
     try {
       const r = runScenario(d, s);
-      if (mb) {
-        const c = mathBroResult(mb, r);
-        if (!c.skipped) {
-          const close = (a, b, tol) => Math.abs(a - b) <= tol * Math.max(Math.abs(a), Math.abs(b));
-          const sameP = c.perCubeTargetChance === null || close(r.perCubeTargetChance, c.perCubeTargetChance, 0.01);
-          c.verdict = sameP && Math.abs(r.totalCubes.mean - c.meanCubes) <= Math.max(1, 0.01 * c.meanCubes) ? "match"
-            : `DIFF (chance x${(r.perCubeTargetChance / c.perCubeTargetChance || 1).toFixed(3)}, cubes ${r.totalCubes.mean} vs ${c.meanCubes})`;
-        }
-        r.check = c;
-      }
+      if (s.expect) r.expected = checkExpected(r, s.expect);
       return r;
     } catch (e) {
       return { label: s.label || null, error: e.message };
@@ -441,8 +385,15 @@ async function main() {
   });
   if (args.json) { console.log(JSON.stringify(results, null, 2)); return; }
   for (const r of results) console.log(`${r.error ? `${r.label ? r.label + ": " : ""}ERROR ${r.error}` : describe(r)}\n`);
-  if (mb) console.error(`MathBro line data: ${mb.dataDate}; ours: Nexon KMS tables fetched ${d.kms.fetched}.`);
+  const checked = scenarios.filter((s) => s.expect).length;
+  if (checked) {
+    const matched = results.filter((r) => r.expected === "match").length;
+    console.log(`${matched} of ${checked} scenarios match their expected results.`);
+    if (matched < checked) process.exitCode = 1;
+  }
 }
 
 const isMain = process.argv[1] && fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url));
-if (isMain) main().catch((e) => { console.error(e.message); process.exit(1); });
+if (isMain) {
+  try { main(); } catch (e) { console.error(e.message); process.exit(1); }
+}

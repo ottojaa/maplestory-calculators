@@ -12,10 +12,9 @@ Command-line calculators for GMS MapleStory upgrade decisions (Heroic worlds), u
 | `hyper_opt.py` | Best hyper stat allocation for a point budget on the damage model. |
 | `symbols.py` | Arcane symbol growth, Arcane Power, mesos and % damage by week from current levels. |
 | `nexon_news.py` | Lists and reads MapleStory GMS news posts (patch notes, events) from Nexon's JSON feed: `list --grep ...`, `get <id> --grep ...`. |
-| `cube_calc.mjs` | Cube odds and costs, offline (Node 18+): chance per cube of a line target, cubes and mesos to tier up and hit it. Line odds are Nexon's official tables (`data/cube_lines_kms.json`); GMS tier-up rates, prices and fees are in `data/cube_gms.json` with sources. `--lines` prints what can roll on an item; `--check` compares with [MathBro's calculator](https://brendonmay.github.io/cubingCalculator/) (downloads it). |
-| `cube_rates_fetch.mjs` | Re-downloads Nexon Korea's potential tables into `data/cube_lines_kms.json` (~11,000 requests, ~17 min). Run it when Nexon changes the tables, then `node cube_calc.mjs --batch examples/cube_check_scenarios.json --check`. |
+| `cube_calc.mjs` | Cube odds and costs, offline (Node 18+): chance per cube of a line target, cubes and mesos to tier up and hit it. Line odds are Nexon's official tables (`data/cube_lines_kms.json`); GMS tier-up rates, prices and fees are in `data/cube_gms.json` with sources. `--lines` prints what can roll on an item. `node cube_calc.mjs --batch examples/cube_check_scenarios.json` checks 124 scenarios against [MathBro's calculator](https://brendonmay.github.io/cubingCalculator/)'s results (stored, 2026-10-04). |
 
-Requirements: Python 3.9+ with numpy, Node 18+ for cubes. Quick start:
+Requirements: Python 3.9+ with numpy, Node 18+ for cubes. Everything except `nexon_news.py` runs offline. Quick start:
 
 ```bash
 python3 damage_model.py --stats "STR 15493 DEX 2687 ATT 1471 damage 46 boss 191 IED 93.09 crit 74 critdmg 17" \
